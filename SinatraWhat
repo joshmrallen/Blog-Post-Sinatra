@@ -1,0 +1,138 @@
+What's Sinatra?
+
+Sinatra is a Domain-Specific Language "for quickly creating web applications in Ruby with minimal effort." Domain-Specific Languages (DSL) are often called "mini-languages."
+
+
+Let's create a super basic app: First, install the gem by typing the following into your terminal:
+
+$ gem install sinatra
+
+For me, it hung, so I interrupted it (with ctrl-c), then ran it again and it installed without a problem.
+
+After sinatra is installed, create a new ruby file and enter the following:
+
+require 'sinatra'
+
+get '/' do
+    'Hello, world!'
+end
+
+run the ruby file:
+ruby hello.rb
+== Sinatra (v2.0.8.1) has taken the stage on 4567 for development with backup from WEBrick
+view it on http://localhost:4567
+
+--screenshot--
+
+Using Parameters:
+
+require 'rubygems'
+require'sinatra'
+
+get '/hello/:name' do
+    "Hello #{params[:name]}!"
+end
+
+Parameters get passed to the string throuhg the url itself, much like API urls.
+
+Making this change, go back to your terminal and restart the server by interrupting it (control + c) and running the file again.
+
+Now, when you enter the URL, enter it with name/yourname, like this:
+
+http://localhost:4567/name/Josh
+
+And you'll see the following:
+
+--screenshot here--
+
+Here, '/hello' matches the part of the call to 'get' in quotes. :name is basically an attribute that you'll be specifying a value as the text you enter in part of the url. The 'get' takes it like a parameter and passes it to the code inside the block (do ... end).
+
+Adding HTML
+
+The first thing you'll notice about the following code is the use of 'erb' where it seems like we're using it with what looks to be a symbol ':hello'.
+
+ERB stands for Embedded Ruby, meaning that it allows you to combine plain text with Ruby code. This makes passing arguments very easy.
+
+ERB is a part of the standard Ruby library so there's nothing extra to install or require.
+
+get '/hello/:name' do
+    @name = params[:name]
+    erb :hello
+end
+
+Notice how we're defining an instance variable here: @name. This will be used in the code below print out the passed argument inside the html.
+
+But first: when we use erb, we have to define what's known as a 'template'. Here, we're going to use what's known as an 'in-line template' at the end of our file that will be automatically loaded by sinatra when we start the server by running our ruby file.
+
+You'll notice in the following code that there are two class variables that normally are used within classes only, identified by the double @ signs:
+
+__END__
+@@layout
+<html>
+<body>
+<%= yield %>
+</body>
+</html>
+@@hello
+<h3>Hello<%= @name %>!</h3>
+
+Here's what's happening:
+
+First, we identify the "end" of the file so that we can start writing the template. We do this with double underscores on each side of 'END' in all capital letters: __END__ .
+
+Next, we tell sinatra the "layout" of our html using a class variable: @@layout.
+
+The next part is important and might not be immediately clear to the uninitiated.
+
+There's a tag here with 'yield' inside of it. This will go inside the html 'layout' where you want your desired "embedded ruby" to go. So, you're basically "yielding" the results of your code to the html. It's important to remember to include '%= ... %' inside of the tag. This is also how we'll call our variable @name to return its value inside of the html.
+
+But where is this embedded code we want to yield to the html layout? Well, it's going to be a mix of html tags and the instance variable we declared inside of the get method up top.
+
+Wherever the layout of our html structure ends (like the closing </html> tag), is where we put the @@hello.
+
+Sinatra seems to evaluate the definition of @@hello much like how a browser compiles an html file: line by line, except in this case, it's identifying the value for the :hello where we used the 'erb' keyword in our get method.
+
+So, right underneath @@hello, we will put all of the html that we want to be inserted wherever we put the yield.
+
+So, we do that as such:
+
+@@hello
+<h3>Hello<%= @name %>!</h3>
+
+ERB is bringing the value of @name into the html for Sinatra to print to the browser.
+
+Looking at it again, it's quite amazing:
+
+get '/hello/:name' do
+    @name = params[:name]
+    erb :hello
+end
+__END__
+@@layout
+<html>
+<body>
+<%= yield %>
+</body>
+</html>
+@@hello
+<h3>Hello<%= @name %>!</h3>
+
+Once complete, all you have to do is run your ruby file:
+
+ruby hello.rb
+
+Then open your browser to the port specified in Sinatra's message:
+
+in my case, it's: http://localhost:4567/name/Josh
+
+--sreenshot--
+
+Sources:
+
+Sinatra documentation:
+http://sinatrarb.com/documentation.html
+
+
+Morin, Michael. "Hello, Sinatra! Using Sinatra in Ruby." ThoughtCo, Jan. 29, 2020, thoughtco.com/using-sinatra-in-ruby-2908286.
+
+https://stackoverflow.com/questions/4284421/what-is-the-meaning-of-erb
